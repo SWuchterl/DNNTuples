@@ -17,7 +17,11 @@ namespace deepntuples {
 class ScoutFatJetCompleteFiller: public NtupleBase {
 public:
   ScoutFatJetCompleteFiller() : ScoutFatJetCompleteFiller("", 0.8) {}
-  ScoutFatJetCompleteFiller(std::string branchName, double jetR=0.8) : NtupleBase(branchName, jetR) {}
+  ScoutFatJetCompleteFiller(std::string branchName, double jetR=0.8) : NtupleBase(branchName, jetR) {
+    if (jetR == 1.5){
+      isAK15_ = true;
+    }
+  }
   virtual ~ScoutFatJetCompleteFiller() {}
  
   // get input parameters from the cfg file
@@ -38,6 +42,7 @@ private:
   bool isHVV2DVarMassSample_ = false;
   bool isTrainSample_ = false;
   bool isMDTagger_ = true;
+  bool isAK15_ = true;
 
   bool debug_ = false;
 
@@ -63,6 +68,33 @@ private:
     "scoutingFatPFJetReclusterNjettiness:tau2",
     "scoutingFatPFJetReclusterNjettiness:tau3",
     "scoutingFatPFJetReclusterNjettiness:tau4",
+    // scouting pf features
+    "scoutingPFCandidate:normchi2",
+    "scoutingPFCandidate:dz",
+    "scoutingPFCandidate:dxy",
+    "scoutingPFCandidate:dzsig",
+    "scoutingPFCandidate:dxysig",
+    "scoutingPFCandidate:trkPt",
+    "scoutingPFCandidate:trkEta",
+    "scoutingPFCandidate:trkPhi"
+  };
+  std::vector<std::string> value_map_float_names_AK15_ = {
+    // jet tagging probabilities
+    "scoutingFatPFJet15ReclusterParticleNetJetTags:probQCDall",
+    "scoutingFatPFJet15ReclusterParticleNetJetTags:probHbb",
+    "scoutingFatPFJet15ReclusterParticleNetJetTags:probHcc",
+    "scoutingFatPFJet15ReclusterParticleNetJetTags:probHqq",
+    // soft drop mass
+    "scoutingFatPFJet15ReclusterSoftDropMass",
+    // regressed mass
+    "scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags:mass",
+    // substructure variables
+    "scoutingFatPFJet15ReclusterEcfNbeta1:ecfN2",
+    "scoutingFatPFJet15ReclusterEcfNbeta1:ecfN3",
+    "scoutingFatPFJet15ReclusterNjettiness:tau1",
+    "scoutingFatPFJet15ReclusterNjettiness:tau2",
+    "scoutingFatPFJet15ReclusterNjettiness:tau3",
+    "scoutingFatPFJet15ReclusterNjettiness:tau4",
     // scouting pf features
     "scoutingPFCandidate:normchi2",
     "scoutingPFCandidate:dz",

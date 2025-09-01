@@ -19,9 +19,14 @@ void ScoutFatJetCompleteFiller::readConfig(const edm::ParameterSet& iConfig, edm
   isMDTagger_ = iConfig.getUntrackedParameter<bool>("isMDTagger", true);
 
   // value maps (for aux features of scouting PF cands)
-  for (auto& name: value_map_float_names_) {
-    value_map_float_tokens_[name] = cc.consumes<edm::ValueMap<float>>(edm::InputTag(name));
-  }
+  if (!isAK15_){
+    for (auto& name: value_map_float_names_) {
+      value_map_float_tokens_[name] = cc.consumes<edm::ValueMap<float>>(edm::InputTag(name));
+    }
+  }else{
+    for (auto& name: value_map_float_names_AK15_) {
+      value_map_float_tokens_[name] = cc.consumes<edm::ValueMap<float>>(edm::InputTag(name));
+    }  }
   for (auto& name: value_map_int_names_) {
     value_map_int_tokens_[name] = cc.consumes<edm::ValueMap<int>>(edm::InputTag(name));
   }
@@ -30,8 +35,14 @@ void ScoutFatJetCompleteFiller::readConfig(const edm::ParameterSet& iConfig, edm
 
 void ScoutFatJetCompleteFiller::readEvent(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   iEvent.getByToken(genParticlesToken_, genParticlesHandle);
-  for (auto& name: value_map_float_names_) {
-    iEvent.getByToken(value_map_float_tokens_[name], value_map_float_handles_[name]);
+  if (!isAK15_){
+    for (auto& name: value_map_float_names_) {
+      iEvent.getByToken(value_map_float_tokens_[name], value_map_float_handles_[name]);
+    }
+  }else{
+    for (auto& name: value_map_float_names_AK15_) {
+      iEvent.getByToken(value_map_float_tokens_[name], value_map_float_handles_[name]);
+    }
   }
   for (auto& name: value_map_int_names_) {
     iEvent.getByToken(value_map_int_tokens_[name], value_map_int_handles_[name]);
@@ -295,9 +306,16 @@ bool ScoutFatJetCompleteFiller::fill(const pat::Jet& jet, size_t jetidx, const J
     data.fill<float>("scoutfj_energy", ajet.energy());
 
     // substructure
-    float tau1 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau1"])[scoutjetRef];
-    float tau2 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau2"])[scoutjetRef];
-    float tau3 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau3"])[scoutjetRef];
+    float tau1,tau2,tau3;
+    if (!isAK15_){
+      tau1 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau1"])[scoutjetRef];
+      tau2 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau2"])[scoutjetRef];
+      tau3 = (*value_map_float_handles_["scoutingFatPFJetReclusterNjettiness:tau3"])[scoutjetRef];
+    }else{
+      tau1 = (*value_map_float_handles_["scoutingFatPFJet15ReclusterNjettiness:tau1"])[scoutjetRef];
+      tau2 = (*value_map_float_handles_["scoutingFatPFJet15ReclusterNjettiness:tau2"])[scoutjetRef];
+      tau3 = (*value_map_float_handles_["scoutingFatPFJet15ReclusterNjettiness:tau3"])[scoutjetRef];
+    }
     data.fill<float>("scoutfj_tau1", tau1);
     data.fill<float>("scoutfj_tau2", tau2);
     data.fill<float>("scoutfj_tau3", tau3);
@@ -305,17 +323,34 @@ bool ScoutFatJetCompleteFiller::fill(const pat::Jet& jet, size_t jetidx, const J
     data.fill<float>("scoutfj_tau32", tau2 > 0 ? tau3/tau2 : 1.01);
 
     // soft drop
-    auto msd_uncorr = (*value_map_float_handles_["scoutingFatPFJetReclusterSoftDropMass"])[scoutjetRef];
-    data.fill<float>("scoutfj_sdmass", msd_uncorr);
+
+    if (!isAK15_){
+      auto msd_uncorr = (*value_map_float_handles_["scoutingFatPFJetReclusterSoftDropMass"])[scoutjetRef];
+      data.fill<float>("scoutfj_sdmass", msd_uncorr);
+    }else{
+      auto msd_uncorr = (*value_map_float_handles_["scoutingFatPFJet15ReclusterSoftDropMass"])[scoutjetRef];
+      data.fill<float>("scoutfj_sdmass", msd_uncorr);
+    }
 
     // jet tagging probs
-    data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
-    data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
-    data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
-    data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
+      if (!isAK15_){
+      data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
 
-    // mass regression
-    data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+      // mass regression
+      data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+      }else{
+
+      data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
+      data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
+
+      // mass regression
+      data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+    }
   
     // ----------------------------------------------------------------
 
