@@ -6,7 +6,6 @@ options = VarParsing('analysis')
 
 options.outputFile = 'output.root'
 options.inputFiles = 'file:///eos/cms/store/mc/RunIII2024Summer24MiniAODv6/GluGluH-Hto2C_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2_ext1-v2/100000/78849373-9e62-4381-aff6-dcb6f83a1910.root' ## H->WH/ZH->aaxx
-# options.inputFiles = 'file:/afs/cern.ch/user/c/coli/miniv6.root'
 
 options.maxEvents = -1
 
@@ -78,29 +77,12 @@ useReclusteredJets = False
 jetR = 1.5
 
 assert useReclusteredJets == False, 'Reclustering jets is not supported in this version yet'
-srcJets = cms.InputTag('slimmedJetsAK8') # use default fatjet collection in MiniAOD
+srcJets = cms.InputTag('ak15WithUserData') # use default fatjet collection in MiniAOD
+
 
 ## ========== load the scouting AK15 jet reclustering task ========== ##
 ## https://github.com/cms-sw/cmssw/blob/CMSSW_15_0_0/PhysicsTools/NanoAOD/python/custom_run3scouting_cff.py
 from PhysicsTools.NanoAOD.run3scouting_cff import *
-# process.scoutingFatPFJet15ReclusterTask = cms.Task(
-#     scoutingPFCandidate, # translate to reco::PFCandidate, used as input
-#     scoutingFatPFJet15Recluster, # jet clustering
-#     scoutingFatPFJet15ReclusterParticleNetJetTagInfos, scoutingFatPFJet15ReclusterParticleNetJetTags, # jet tagging
-#     scoutingFatPFJet15ReclusterSoftDrop, scoutingFatPFJet15ReclusterSoftDropMass, # softdrop mass
-#     scoutingFatPFJet15ReclusterParticleNetJetTagInfos, scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags, # regressed mass
-#     scoutingFatPFJet15ReclusterEcfNbeta1, scoutingFatPFJet15ReclusterNjettiness, # substructure variables
-#     # scoutingFatPFJet15ReclusterTable
-# )
-# process.scoutingFatPFJet15Match = cms.EDProducer("JetMatcherDRAllowEmpty",
-#     source = cms.InputTag("slimmedJetsAK8"),
-#     matched = cms.InputTag("scoutingFatPFJet15Recluster")
-# )
-# process.scoutingFatPFJet15ReclusterTask.add(process.scoutingFatPFJet15Match)
-
-
-
-
 
 process.scoutingFatPFJet15ReclusterMatchGenExtensionTable = process.scoutingFatPFJetReclusterMatchGenExtensionTable.clone(
     externalVariables = cms.PSet(
@@ -210,7 +192,7 @@ del process.scoutingFatPFJetReclusterMatchGenExtensionTask
 
 
 process.scoutingFatPFJet15Match = cms.EDProducer("JetMatcherDRAllowEmpty",
-    source = cms.InputTag("slimmedJetsAK8"),
+    source = cms.InputTag("ak15WithUserData"),
     matched = cms.InputTag("scoutingFatPFJet15Recluster")
 )
 process.scoutingFatPFJet15ReclusterTask.add(process.scoutingFatPFJet15Match)
@@ -301,6 +283,7 @@ process.ak15GenJetsWithNuMatch = cms.EDProducer("GenJetMatcher",  # cut on delta
 process.ak15GenJetsWithNuSoftDropMatch = cms.EDProducer("GenJetMatcher",  # cut on deltaR; pick best by deltaR
                                                        src=srcJets,  # RECO jets (any View<Jet> is ok)
                                                        # GEN jets  (must be GenJetCollection)
+                                                    #    matched=cms.InputTag("ak15GenJetsWithNuSoftDrop","SubJets"),
                                                        matched=cms.InputTag("ak15GenJetsWithNuSoftDrop"),
                                                        mcPdgId=cms.vint32(),  # n/a
                                                        mcStatus=cms.vint32(),  # n/a
@@ -313,7 +296,7 @@ process.ak15GenJetsWithNuSoftDropMatch = cms.EDProducer("GenJetMatcher",  # cut 
                                                        resolveByMatchQuality=cms.bool(False),
                                                        )
 process.ak15GenJetsNoNuMatch = process.ak15GenJetsWithNuMatch.clone(matched=cms.InputTag("ak15GenJetsNoNu"))
-process.ak15GenJetsNoNuSoftDropMatch = process.ak15GenJetsWithNuSoftDropMatch.clone(matched=cms.InputTag("ak15GenJetsNoNuSoftDrop"))
+process.ak15GenJetsNoNuSoftDropMatch = process.ak15GenJetsWithNuSoftDropMatch.clone(matched=cms.InputTag("ak15GenJetsNoNuSoftDrop","SubJets"))
 
 process.genJetTask = cms.Task(
     process.ak15GenJetsWithNu,
@@ -330,6 +313,7 @@ process.genJetTask = cms.Task(
 # DeepNtuplizer
 process.load("DeepNTuples.Ntupler.DeepNtuplizer_cfi")
 process.deepntuplizer.jets = srcJets
+process.deepntuplizer.jetR = jetR
 process.deepntuplizer.useReclusteredJets = useReclusteredJets
 
 from RecoBTag.ONNXRuntime.pfParticleNet_cff import _pfParticleNetJetTagsAll as pfParticleNetJetTagsAll
@@ -369,22 +353,17 @@ process.deepntuplizer.keepAllEvents = options.keepAllEvents
 process.deepntuplizer.adhocFixMode = options.adhocFixMode
 #==============================================================================================================================#
 process.p = cms.Path(process.deepntuplizer)
+
+# load slimmed AK15
+from DeepNTuples.Ntupler.ak15_cff import setupAK15
+# setupAK15(process, runOnMC = True, customAK15Taggers=customAK15Taggers, keepBranchMap = keepBranchMap)
+setupAK15(process, path = "p", runOnMC = True)
+
 process.p.associate(patTask)
 process.p.associate(process.genJetTask)
 process.p.associate(process.scoutingFatPFJet15ReclusterTask)
 
 if process.scoutingFatPFJetReclusterTask:
-# process.scoutingNanoTaskCommon = cms.Task(
-#     process.scoutingElectronTableTask,
-#     process.scoutingFatPFJetReclusterTask,
-#     process.scoutingMETTable,
-#     process.scoutingMuonDisplacedVertexTableTask,
-#     process.scoutingMuonTableTask,
-#     process.scoutingPFJetReclusterTask,
-#     process.scoutingPFJetTable,
-#     process.scoutingPhotonTable,
-#     process.scoutingPrimaryVertexTable,
-# process.scoutingRhoTable)
     process.scoutingNanoTaskCommon.remove(process.scoutingFatPFJetReclusterTask)
     del process.scoutingFatPFJetReclusterTask
 
