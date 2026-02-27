@@ -147,6 +147,14 @@ void ScoutFatJetCompleteFiller::book() {
   // regressed mass
   data.add<float>("scoutfj_massreg", 0);
 
+  // for glopart
+  data.add<float>("scoutfj_glopart_probQCD", 0);
+  data.add<float>("scoutfj_glopart_probHbb", 0);
+  data.add<float>("scoutfj_glopart_probHcc", 0);
+  data.add<float>("scoutfj_glopart_probHqq", 0);
+  // regressed resonance mass
+  data.add<float>("scoutfj_glopart_massreg", 0);
+
   // ----------------------------------------------------------------
   // scouting pf features
   data.add<int>("n_scoutpfcands", 0);
@@ -334,22 +342,33 @@ bool ScoutFatJetCompleteFiller::fill(const pat::Jet& jet, size_t jetidx, const J
 
     // jet tagging probs
       if (!isAK15_){
-      data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
 
-      // mass regression
-      data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+        // mass regression
+        data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJetReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
       }else{
 
-      data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
-      data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probQCD", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probQCDall"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHbb", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHbb"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHcc", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHcc"])[scoutjetRef]);
+        data.fill<float>("scoutfj_probHqq", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetJetTags:probHqq"])[scoutjetRef]);
 
-      // mass regression
-      data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+        // mass regression
+        data.fill<float>("scoutfj_massreg", (*value_map_float_handles_["scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags:mass"])[scoutjetRef]);
+
+
+        // fill glopart
+        // scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags
+        data.fill<float>("scoutfj_glopart_probQCD", (*value_map_float_handles_["scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probQCD"])[scoutjetRef]);
+        data.fill<float>("scoutfj_glopart_probHbb", (*value_map_float_handles_["scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXbb"])[scoutjetRef]);
+        data.fill<float>("scoutfj_glopart_probHcc", (*value_map_float_handles_["scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXcc"])[scoutjetRef]);
+        data.fill<float>("scoutfj_glopart_probHqq", (*value_map_float_handles_["scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXqq"])[scoutjetRef]);
+
+        data.fill<float>("scoutfj_glopart_massreg", (*value_map_float_handles_["scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:massCorrResonance"])[scoutjetRef]);
+
     }
   
     // ----------------------------------------------------------------

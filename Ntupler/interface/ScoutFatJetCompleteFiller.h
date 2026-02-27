@@ -84,6 +84,12 @@ private:
     "scoutingFatPFJet15ReclusterParticleNetJetTags:probHbb",
     "scoutingFatPFJet15ReclusterParticleNetJetTags:probHcc",
     "scoutingFatPFJet15ReclusterParticleNetJetTags:probHqq",
+    // glopart
+    "scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probQCD",
+    "scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXbb",
+    "scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXcc",
+    "scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:probXqq",
+    "scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags:massCorrResonance",
     // soft drop mass
     "scoutingFatPFJet15ReclusterSoftDropMass",
     // regressed mass

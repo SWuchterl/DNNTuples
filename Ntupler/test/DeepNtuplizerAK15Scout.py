@@ -5,7 +5,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 
 options.outputFile = 'output.root'
-options.inputFiles = 'file:///eos/cms/store/mc/RunIII2024Summer24MiniAODv6/GluGluH-Hto2C_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2_ext1-v2/100000/78849373-9e62-4381-aff6-dcb6f83a1910.root' ## H->WH/ZH->aaxx
+# options.inputFiles = 'file:///eos/cms/store/mc/RunIII2024Summer24MiniAODv6/GluGluH-Hto2C_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2_ext1-v2/100000/78849373-9e62-4381-aff6-dcb6f83a1910.root' ## H->WH/ZH->aaxx
+options.inputFiles = '/store/mc/RunIII2024Summer24MiniAODv6/GluGluH-Hto2C_Par-M-125_TuneCP5_13p6TeV_powhegMINLO-pythia8/MINIAODSIM/150X_mcRun3_2024_realistic_v2_ext1-v2/100000/78849373-9e62-4381-aff6-dcb6f83a1910.root' ## H->WH/ZH->aaxx
 
 options.maxEvents = -1
 
@@ -114,6 +115,7 @@ process.scoutingFatPFJet15ReclusterMatchGenExtensionTask = cms.Task(
 
 process.scoutingFatPFJet15Recluster = process.scoutingFatPFJetRecluster.clone(
     rParam = cms.double(1.5),
+    jetPtMin = cms.double(130.0),
 )
 del process.scoutingFatPFJetRecluster
 
@@ -152,6 +154,10 @@ process.scoutingFatPFJet15ReclusterParticleNetJetTags = process.scoutingFatPFJet
 )
 del process.scoutingFatPFJetReclusterParticleNetJetTags
 
+# insert my custom model here
+process.scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags.model_path = cms.FileInPath("DeepNTuples/Ntupler/data/GlobalParticleTransformerAK15/General/V01/scouting_model_ak15_2024.onnx")
+process.scoutingFatPFJet15ReclusterGlobalParticleTransformerJetTags.preprocess_json = cms.string("DeepNTuples/Ntupler/data/GlobalParticleTransformerAK15/General/V01/preprocess.json")
+
 process.scoutingFatPFJet15ReclusterParticleNetMassRegressionJetTags = process.scoutingFatPFJetReclusterParticleNetMassRegressionJetTags.clone(
     jets = cms.InputTag("scoutingFatPFJet15Recluster"),
     src = cms.InputTag("scoutingFatPFJet15ReclusterParticleNetJetTagInfos")
@@ -161,6 +167,7 @@ del process.scoutingFatPFJetReclusterParticleNetMassRegressionJetTags
 process.scoutingFatPFJet15ReclusterSoftDrop = process.scoutingFatPFJetReclusterSoftDrop.clone(
     R0 = cms.double(1.5),
     rParam = cms.double(1.5),
+    jetPtMin = cms.double(130.0),
 )
 del process.scoutingFatPFJetReclusterSoftDrop
 
@@ -352,6 +359,9 @@ process.deepntuplizer.isMDTagger = options.isMDTagger
 process.deepntuplizer.keepAllEvents = options.keepAllEvents
 process.deepntuplizer.adhocFixMode = options.adhocFixMode
 #==============================================================================================================================#
+# lower pt threshold
+process.deepntuplizer.jetPtMin = 130.0
+
 process.p = cms.Path(process.deepntuplizer)
 
 # load slimmed AK15
@@ -367,4 +377,4 @@ if process.scoutingFatPFJetReclusterTask:
     process.scoutingNanoTaskCommon.remove(process.scoutingFatPFJetReclusterTask)
     del process.scoutingFatPFJetReclusterTask
 
-# open("debug_dump_AK15.py", "w").write(process.dumpPython())
+open("debug_dump_AK15.py", "w").write(process.dumpPython())
