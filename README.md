@@ -7,7 +7,7 @@ cd CMSSW_15_0_0/src
 cmsenv
 
 # clone this repo into "DeepNTuples" directory
-git clone git@github.com:colizz/DNNTuples.git DeepNTuples -b dev-nanov15
+git clone git@github.com:SWuchterl/DNNTuples.git DeepNTuples -b dev/AK15Scout
 
 scram b -j8
 ```
